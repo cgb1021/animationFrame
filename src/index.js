@@ -4,23 +4,18 @@ const requestAnimationFrame = window.requestAnimationFrame || window.webkitReque
 const cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.clearTimeout
 const animationList = [];
 let animationFrameId;
+let status = false
 function animationFrame() {
     const time = Date.now();
     animationList.forEach((item) => {
-        if ((!item.interval || (time - item.time) >= item.interval)) {
+        if (status && (!item.interval || (time - item.time) >= item.interval)) {
             item.time = time;
             item.fn(time);
         }
     })
-    animationFrameId = requestAnimationFrame(animationFrame);
+    if (status) animationFrameId = requestAnimationFrame(animationFrame);
 }
 
-export default {
-    add: animationAdd,
-    remove: animationRemove,
-    start: animationStart,
-    stop: animationStop
-}
 /*
 * 添加动画函数
 * @param {Function} fn
@@ -28,7 +23,7 @@ export default {
 * @param {String} key
 * @param {Number} prior
 */
-export const animationAdd = function (fn, interval = 0, key = '', prior = 0) {
+export function animationAdd (fn, interval = 0, key = '', prior = 0) {
     if (typeof fn !== 'function') return;
     let i = 0;
     for (let len = animationList.length; i < len; i++) {
@@ -36,7 +31,7 @@ export const animationAdd = function (fn, interval = 0, key = '', prior = 0) {
             break;
         }
     }
-    animationList.splice(i - 1, 0, {
+    animationList.splice(i, 0, {
         fn,
         interval,
         time: 0,
@@ -48,7 +43,7 @@ export const animationAdd = function (fn, interval = 0, key = '', prior = 0) {
 * 移除动画函数
 * @param {String|Function} key 不传删除所有函数（clean）
 */
-export const animationRemove = function (key) {
+export function animationRemove (key) {
     if (!key) {
         animationList.length = 0;
         return;
@@ -65,12 +60,20 @@ export const animationRemove = function (key) {
 /*
  * 开始重复执行requestAnimationFrame
  */
-export const animationStart = function () {
+export function animationStart () {
+    status = true
     animationFrameId = requestAnimationFrame(animationFrame)
 }
 /*
  * 停止执行requestAnimationFrame
  */
-export const animationStop = function () {
+export function animationStop () {
+    status = false
     cancelAnimationFrame(animationFrameId)
+}
+export default {
+    add: animationAdd,
+    remove: animationRemove,
+    start: animationStart,
+    stop: animationStop
 }
