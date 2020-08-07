@@ -24,38 +24,51 @@ function animationFrame() {
 * @param {Number} prior
 */
 export function animationAdd (fn, interval = 0, key = '', prior = 0) {
-    if (typeof fn !== 'function') return;
-    let i = 0;
-    for (let len = animationList.length; i < len; i++) {
-        if (prior > animationList[i].prior) {
-            break;
-        }
-    }
-    animationList.splice(i, 0, {
-        fn,
-        interval,
-        time: 0,
-        key,
-        prior
-    })
+      if (typeof fn !== 'function') return;
+      let index = -1;
+      for (let  i = 0, len = animationList.length; i < len; i++) {
+          if (animationList[i].fn === fn) {
+              index = -1;
+              break;
+          }
+          if (index === -1 && prior > animationList[i].prior) {
+              index = i;
+          }
+      }
+      if (index > -1) {
+          animationList.splice(i, 0, {
+              fn,
+              interval,
+              time: 0,
+              key,
+              prior
+        })
+      }
+      return index;
 }
 /*
 * 移除动画函数
 * @param {String|Function} key 不传删除所有函数（clean）
 */
 export function animationRemove (key) {
+    let res = 0
     if (!key) {
+        res = animationList.length;
         animationList.length = 0;
-        return;
+        return res;
     }
     let i = 0;
-    for (let len = animationList.length; i < len; i++) {
+    const itemKey = typeof key === 'function' ? 'fn' : 'key'
+    while (i < animationList.length) {
         const item = animationList[i];
-        if (item.key === key || item.fn === key) {
-            break;
+        if (item[itemKey] === key) {
+            animationList.splice(i, 1)
+            res++;
+            continue;
         }
+        i++;
     }
-    animationList.splice(i, 1);
+    return res;
 }
 /*
  * 开始重复执行requestAnimationFrame
