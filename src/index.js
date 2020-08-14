@@ -24,7 +24,10 @@ function animationFrame() {
 * @param {Number} prior
 */
 export function animationAdd (fn, interval = 0, key = '', prior = 0) {
-      if (typeof fn !== 'function') return;
+      if (typeof fn !== 'function') {
+        console.warn('no function');
+        return;
+      }
       let index = -1;
       for (let  i = 0, len = animationList.length; i < len; i++) {
           if (animationList[i].fn === fn) {
@@ -84,9 +87,60 @@ export function animationStop () {
     status = false
     cancelAnimationFrame(animationFrameId)
 }
-export default {
-    add: animationAdd,
-    remove: animationRemove,
-    start: animationStart,
-    stop: animationStop
+/*
+ * 执行requestAnimationFrame对象{start, stop, remove, fn}
+ * @param {Function} fn
+ * @param {Number} interval 执行间隔
+ */
+function animation (fn, interval = 0) {
+  this.status = 0;
+  this.fn = null;
+  this.interval = Math.max(0, +interval);
+  let frameId = 0;
+  const frameItem = {
+    fn: typeof fn === 'function' ? fn : null
+  }
+  const _frame1 = () => {
+    frameId = requestAnimationFrame(() => {
+      frameItem.fn(Date.now());
+      if (this.status) _frame1();
+    })
+  }
+  const _frame2 = () => {
+    frameId = requestAnimationFrame(() => {
+      const now = Date.now();
+      if (now - frameItem.time >= this.interval) {
+        frameItem.time = now;
+        frameItem.fn(now);
+      }
+      if (this.status) _frame2();
+    })
+  }
+  this.start = function () {
+    if (typeof frameItem.fn !== 'function') {
+      console.warn('no function');
+      return;
+    }
+    this.status = 1;
+    if (this.interval) {
+      frameItem.time = 0;
+      _frame2();
+    } else {
+      _frame1();
+    }
+  }
+  this.stop = function () {
+    this.status = 0;
+    cancelAnimationFrame(frameId);
+  }
+  this.remove = function () {
+    this.stop();
+    frameItem.fn = null;
+  }
+  this.fn = function (fn) {
+    if (typeof fn === 'function') {
+      frameItem.fn = fn;
+    }
+  }
 }
+export default animation;
