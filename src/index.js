@@ -22,24 +22,25 @@ function animationFrame() {
 * @param {Number} interval
 * @param {String} key
 * @param {Number} prior
+* @return {Number}
 */
 export function animationAdd (fn, interval = 0, key = '', prior = 0) {
       if (typeof fn !== 'function') {
         console.warn('no function');
         return;
       }
-      let index = -1;
+      let index = 0;
       for (let  i = 0, len = animationList.length; i < len; i++) {
+        index = i;
+        if (prior > animationList[i].prior) {
           if (animationList[i].fn === fn) {
-              index = -1;
-              break;
+            index = -1;
           }
-          if (index === -1 && prior > animationList[i].prior) {
-              index = i;
-          }
+          break;
+        }
       }
       if (index > -1) {
-          animationList.splice(i, 0, {
+          animationList.splice(index, 0, {
               fn,
               interval,
               time: 0,
@@ -47,11 +48,13 @@ export function animationAdd (fn, interval = 0, key = '', prior = 0) {
               prior
         })
       }
+      // console.info([...animationList])
       return index;
 }
 /*
 * 移除动画函数
 * @param {String|Function} key 不传删除所有函数（clean）
+* @return {Number}
 */
 export function animationRemove (key) {
     let res = 0
@@ -71,6 +74,7 @@ export function animationRemove (key) {
         }
         i++;
     }
+    // console.info([...animationList])
     return res;
 }
 /*

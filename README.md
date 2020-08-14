@@ -17,6 +17,8 @@ const frame = new animation(() => {
 }, 0)
 frame.start()
 
+let count = 0
+animationStart()
 animationAdd(() => {
 	console.log('Running every animation frame')
 })
@@ -32,7 +34,7 @@ animationAdd(() => {
 }, 1000, '', 9)
 animationAdd(() => {
 	console.log('Animation stop')
-	animationStop()
+	if (count++) animationStop()
 }, 10000)
 ```
 
