@@ -110,18 +110,18 @@ export function animationStop () {
  * @param {Function} fn
  * @param {Number} interval 执行间隔
  */
-function animation (fn, interval = 0) {
-  this.status = 0;
-  this.fn = null;
-  this.interval = Math.max(0, +interval);
+function Animation (fn, interval = 0) {
+  this.interval = Math.max(0, +interval) || 0;
   let frameId = 0;
+  let status = 0;
   const frameItem = {
-    fn: typeof fn === 'function' ? fn : null
+    fn: typeof fn === 'function' ? fn : null,
+    time: 0
   }
   const _frame1 = () => {
     frameId = requestAnimationFrame(() => {
       frameItem.fn(Date.now());
-      if (this.status) _frame1();
+      if (status) _frame1();
     })
   }
   const _frame2 = () => {
@@ -131,7 +131,7 @@ function animation (fn, interval = 0) {
         frameItem.time = now;
         frameItem.fn(now);
       }
-      if (this.status) _frame2();
+      if (status) _frame2();
     })
   }
   this.start = function () {
@@ -139,7 +139,8 @@ function animation (fn, interval = 0) {
       console.warn('no function');
       return;
     }
-    this.status = 1;
+    if (status) return;
+    status = 1;
     if (this.interval) {
       frameItem.time = 0;
       _frame2();
@@ -148,7 +149,7 @@ function animation (fn, interval = 0) {
     }
   }
   this.stop = function () {
-    this.status = 0;
+    status = 0;
     cancelAnimationFrame(frameId);
   }
   this.remove = function () {
@@ -161,4 +162,4 @@ function animation (fn, interval = 0) {
     }
   }
 }
-export default animation;
+export default Animation;

@@ -149,22 +149,22 @@ function animationStop() {
  */
 
 
-function animation(fn) {
+function Animation(fn) {
   var _this = this;
 
   var interval = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-  this.status = 0;
-  this.fn = null;
-  this.interval = Math.max(0, +interval);
+  this.interval = Math.max(0, +interval) || 0;
   var frameId = 0;
+  var status = 0;
   var frameItem = {
-    fn: typeof fn === 'function' ? fn : null
+    fn: typeof fn === 'function' ? fn : null,
+    time: 0
   };
 
   var _frame1 = function _frame1() {
     frameId = requestAnimationFrame(function () {
       frameItem.fn(Date.now());
-      if (_this.status) _frame1();
+      if (status) _frame1();
     });
   };
 
@@ -177,7 +177,7 @@ function animation(fn) {
         frameItem.fn(now);
       }
 
-      if (_this.status) _frame2();
+      if (status) _frame2();
     });
   };
 
@@ -187,7 +187,8 @@ function animation(fn) {
       return;
     }
 
-    this.status = 1;
+    if (status) return;
+    status = 1;
 
     if (this.interval) {
       frameItem.time = 0;
@@ -199,7 +200,7 @@ function animation(fn) {
   };
 
   this.stop = function () {
-    this.status = 0;
+    status = 0;
     cancelAnimationFrame(frameId);
   };
 
@@ -215,5 +216,5 @@ function animation(fn) {
   };
 }
 
-var _default = animation;
+var _default = Animation;
 exports["default"] = _default;
