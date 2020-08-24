@@ -44,25 +44,22 @@ export function animationAdd (fn, interval = 0, key = '', prior = 0) {
         console.warn('no function');
         return;
       }
-      let index = 0;
-      for (let  i = 0, len = animationList.length; i < len; i++) {
-        index = i;
+      let index = animationList.length;
+      for (let i = animationList.length - 1; i >= 0 ; i--) {
+        if (animationList[i].fn === fn) {
+          return -1;
+        }
         if (prior > animationList[i].prior) {
-          if (animationList[i].fn === fn) {
-            index = -1;
-          }
-          break;
+          index = i;
         }
       }
-      if (index > -1) {
-          animationList.splice(index, 0, {
-              fn,
-              interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
-              time: 0,
-              key,
-              prior
-        })
-      }
+      animationList.splice(index, 0, {
+        fn,
+        interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
+        time: 0,
+        key,
+        prior
+      })
       // console.info([...animationList])
       return index;
 }
@@ -96,8 +93,10 @@ export function animationRemove (key) {
  * 开始重复执行requestAnimationFrame
  */
 export function animationStart () {
-    status = true
-    animationFrameId = requestAnimationFrame(animationFrame)
+    if (!status) {
+      status = true
+      animationFrameId = requestAnimationFrame(animationFrame)
+    }
 }
 /*
  * 停止执行requestAnimationFrame

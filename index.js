@@ -66,30 +66,25 @@ function animationAdd(fn) {
     return;
   }
 
-  var index = 0;
+  var index = animationList.length;
 
-  for (var _i = 0, _len = animationList.length; _i < _len; _i++) {
-    index = _i;
+  for (var _i = animationList.length - 1; _i >= 0; _i--) {
+    if (animationList[_i].fn === fn) {
+      return -1;
+    }
 
     if (prior > animationList[_i].prior) {
-      if (animationList[_i].fn === fn) {
-        index = -1;
-      }
-
-      break;
+      index = _i;
     }
   }
 
-  if (index > -1) {
-    animationList.splice(index, 0, {
-      fn: fn,
-      interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
-      time: 0,
-      key: key,
-      prior: prior
-    });
-  } // console.info([...animationList])
-
+  animationList.splice(index, 0, {
+    fn: fn,
+    interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
+    time: 0,
+    key: key,
+    prior: prior
+  }); // console.info([...animationList])
 
   return index;
 }
@@ -133,8 +128,10 @@ function animationRemove(key) {
 
 
 function animationStart() {
-  status = true;
-  animationFrameId = requestAnimationFrame(animationFrame);
+  if (!status) {
+    status = true;
+    animationFrameId = requestAnimationFrame(animationFrame);
+  }
 }
 /*
  * 停止执行requestAnimationFrame
