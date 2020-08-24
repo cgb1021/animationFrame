@@ -1,7 +1,22 @@
-const requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
-    return window.setTimeout(callback, 1000 / 60);
+let requestAnimationFrame = function (callback) {
+    return setTimeout(callback, 1000 / 60);
 }
-const cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.clearTimeout
+let cancelAnimationFrame = clearTimeout
+if (typeof window !== 'undefined') {
+  if (typeof window.requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame = window.requestAnimationFrame;
+    cancelAnimationFrame = window.cancelAnimationFrame;
+  } else {
+    const prefix = ['webkit', 'moz'];
+    for (let i = 0, len = prefix.length; i < len; i++) {
+      if (typeof window[`${prefix}RequestAnimationFrame`] !== 'undefined') {
+        requestAnimationFrame = window[`${prefix}RequestAnimationFrame`];
+        cancelAnimationFrame = window[`${prefix}CancelAnimationFrame`];
+        break;
+      }
+    }
+  }
+}
 const animationList = [];
 let animationFrameId;
 let status = false
@@ -42,7 +57,7 @@ export function animationAdd (fn, interval = 0, key = '', prior = 0) {
       if (index > -1) {
           animationList.splice(index, 0, {
               fn,
-              interval,
+              interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
               time: 0,
               key,
               prior

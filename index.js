@@ -9,11 +9,29 @@ exports.animationStart = animationStart;
 exports.animationStop = animationStop;
 exports["default"] = void 0;
 
-var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
-  return window.setTimeout(callback, 1000 / 60);
+var requestAnimationFrame = function requestAnimationFrame(callback) {
+  return setTimeout(callback, 1000 / 60);
 };
 
-var cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.clearTimeout;
+var cancelAnimationFrame = clearTimeout;
+
+if (typeof window !== 'undefined') {
+  if (typeof window.requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame = window.requestAnimationFrame;
+    cancelAnimationFrame = window.cancelAnimationFrame;
+  } else {
+    var prefix = ['webkit', 'moz'];
+
+    for (var i = 0, len = prefix.length; i < len; i++) {
+      if (typeof window["".concat(prefix, "RequestAnimationFrame")] !== 'undefined') {
+        requestAnimationFrame = window["".concat(prefix, "RequestAnimationFrame")];
+        cancelAnimationFrame = window["".concat(prefix, "CancelAnimationFrame")];
+        break;
+      }
+    }
+  }
+}
+
 var animationList = [];
 var animationFrameId;
 var status = false;
@@ -50,11 +68,11 @@ function animationAdd(fn) {
 
   var index = 0;
 
-  for (var i = 0, len = animationList.length; i < len; i++) {
-    index = i;
+  for (var _i = 0, _len = animationList.length; _i < _len; _i++) {
+    index = _i;
 
-    if (prior > animationList[i].prior) {
-      if (animationList[i].fn === fn) {
+    if (prior > animationList[_i].prior) {
+      if (animationList[_i].fn === fn) {
         index = -1;
       }
 
@@ -65,7 +83,7 @@ function animationAdd(fn) {
   if (index > -1) {
     animationList.splice(index, 0, {
       fn: fn,
-      interval: interval,
+      interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
       time: 0,
       key: key,
       prior: prior
