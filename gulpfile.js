@@ -1,5 +1,7 @@
 const gulp = require('gulp');
 const del = require('del');
+const rollup = require('rollup');
+const uglify = require('gulp-uglify');
 const babel = require('gulp-babel');
 
 gulp.task('clean', function (cb) {
@@ -7,10 +9,24 @@ gulp.task('clean', function (cb) {
     './index.js'
   ], cb)
 });
-gulp.task('js', function (cb) {
-  return gulp.src('src/**/*')
+gulp.task('rollup', () => {
+  return rollup.rollup({
+    input: './src/index.js',
+    plugins: []
+  }).then(bundle => {
+    return bundle.write({
+      file: './index.js',
+      format: 'umd',
+      name: 'Animation'
+    });
+  })
+});
+gulp.task('babel', function (cb) {
+  return gulp.src('./index.js')
   .pipe(babel({
     presets: ['@babel/preset-env']
   }))
+  .pipe(uglify())
   .pipe(gulp.dest('./'))
 });
+gulp.task('build', gulp.series('clean', 'rollup', 'babel'))

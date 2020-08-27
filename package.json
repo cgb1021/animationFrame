@@ -3,11 +3,10 @@
   "version": "1.0.1",
   "description": "对requestAnimationFrame的封装",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "test": "mocha",
-    "build": "npm run clean && npm run js",
-    "js": "gulp js",
-    "clean": "gulp clean"
+    "build": "gulp build"
   },
   "repository": {
     "type": "git",
@@ -31,6 +30,9 @@
     "del": "^5.1.0",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
-    "mocha": "^8.1.1"
-  }
+    "gulp-uglify": "^3.0.2",
+    "mocha": "^8.1.1",
+    "rollup": "^2.26.6"
+  },
+  "dependencies": {}
 }
