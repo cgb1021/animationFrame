@@ -1,1 +1,165 @@
-"use strict";function _typeof(n){return(_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(n){return typeof n}:function(n){return n&&"function"==typeof Symbol&&n.constructor===Symbol&&n!==Symbol.prototype?"symbol":typeof n})(n)}!function(n,t){"object"===("undefined"==typeof exports?"undefined":_typeof(exports))&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((n="undefined"!=typeof globalThis?globalThis:n||self).Animation={})}(void 0,function(n){var r=function(n){return setTimeout(n,1e3/60)},a=clearTimeout;if("undefined"!=typeof window)if(void 0!==window.requestAnimationFrame)r=window.requestAnimationFrame,a=window.cancelAnimationFrame;else for(var t=["webkit","moz"],e=0,o=t.length;e<o;e++)if(void 0!==window["".concat(t,"RequestAnimationFrame")]){r=window["".concat(t,"RequestAnimationFrame")],a=window["".concat(t,"CancelAnimationFrame")];break}var i,u=[],f=!1;function c(){var t=Date.now();u.forEach(function(n){f&&(!n.interval||t-n.time>=n.interval)&&(n.time=t,n.fn(t))}),f&&(i=r(c))}n.animationAdd=function(n){var t=1<arguments.length&&void 0!==arguments[1]?arguments[1]:0,e=2<arguments.length&&void 0!==arguments[2]?arguments[2]:"",o=3<arguments.length&&void 0!==arguments[3]?arguments[3]:0;if("function"==typeof n){for(var i=u.length,f=u.length-1;0<=f;f--){if(u[f].fn===n)return-1;o>u[f].prior&&(i=f)}return u.splice(i,0,{fn:n,interval:"number"==typeof t?Math.max(0,t):0,time:0,key:e,prior:o}),i}console.warn("no function")},n.animationRemove=function(n){var t=0;if(!n)return t=u.length,u.length=0,t;for(var e=0,o="function"==typeof n?"fn":"key";e<u.length;){u[e][o]!==n?e++:(u.splice(e,1),t++)}return t},n.animationStart=function(){f||(f=!0,i=r(c))},n.animationStop=function(){f=!1,a(i)},n.default=function(n){var e=this,t=1<arguments.length&&void 0!==arguments[1]?arguments[1]:0;this.interval=Math.max(0,+t)||0;var o=0,i=0,f={fn:"function"==typeof n?n:null,time:0};this.start=function(){"function"==typeof f.fn?i||(i=1,this.interval?(f.time=0,function t(){o=r(function(){var n=Date.now();n-f.time>=e.interval&&(f.time=n,f.fn(n)),i&&t()})}()):function n(){o=r(function(){f.fn(Date.now()),i&&n()})}()):console.warn("no function")},this.stop=function(){i=0,a(o)},this.remove=function(){this.stop(),f.fn=null},this.fn=function(n){"function"==typeof n&&(f.fn=n)}},Object.defineProperty(n,"__esModule",{value:!0})});
+let requestAnimationFrame = function (callback) {
+    return setTimeout(callback, 1000 / 60);
+}
+let cancelAnimationFrame = clearTimeout
+if (typeof window !== 'undefined') {
+  if (typeof window.requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame = window.requestAnimationFrame;
+    cancelAnimationFrame = window.cancelAnimationFrame;
+  } else {
+    const prefix = ['webkit', 'moz'];
+    for (let i = 0, len = prefix.length; i < len; i++) {
+      if (typeof window[`${prefix}RequestAnimationFrame`] !== 'undefined') {
+        requestAnimationFrame = window[`${prefix}RequestAnimationFrame`];
+        cancelAnimationFrame = window[`${prefix}CancelAnimationFrame`];
+        break;
+      }
+    }
+  }
+}
+const animationList = [];
+let animationFrameId;
+let status = false
+function animationFrame() {
+    const time = Date.now();
+    animationList.forEach((item) => {
+        if (status && (!item.interval || (time - item.time) >= item.interval)) {
+            item.time = time;
+            item.fn(time);
+        }
+    })
+    if (status) animationFrameId = requestAnimationFrame(animationFrame);
+}
+
+/*
+* 添加动画函数
+* @param {Function} fn
+* @param {Number} interval
+* @param {String} key
+* @param {Number} prior
+* @return {Number}
+*/
+export function animationAdd (fn, interval = 0, key = '', prior = 0) {
+      if (typeof fn !== 'function') {
+        console.warn('no function');
+        return;
+      }
+      let index = animationList.length;
+      for (let i = animationList.length - 1; i >= 0 ; i--) {
+        if (animationList[i].fn === fn) {
+          return -1;
+        }
+        if (prior > animationList[i].prior) {
+          index = i;
+        }
+      }
+      animationList.splice(index, 0, {
+        fn,
+        interval: typeof interval === 'number' ? Math.max(0, interval) : 0,
+        time: 0,
+        key,
+        prior
+      })
+      // console.info([...animationList])
+      return index;
+}
+/*
+* 移除动画函数
+* @param {String|Function} key 不传删除所有函数（clean）
+* @return {Number}
+*/
+export function animationRemove (key) {
+    let res = 0
+    if (!key) {
+        res = animationList.length;
+        animationList.length = 0;
+        return res;
+    }
+    let i = 0;
+    const itemKey = typeof key === 'function' ? 'fn' : 'key'
+    while (i < animationList.length) {
+        const item = animationList[i];
+        if (item[itemKey] === key) {
+            animationList.splice(i, 1)
+            res++;
+            continue;
+        }
+        i++;
+    }
+    // console.info([...animationList])
+    return res;
+}
+/*
+ * 开始重复执行requestAnimationFrame
+ */
+export function animationStart () {
+    if (!status) {
+      status = true
+      animationFrameId = requestAnimationFrame(animationFrame)
+    }
+}
+/*
+ * 停止执行requestAnimationFrame
+ */
+export function animationStop () {
+    status = false
+    cancelAnimationFrame(animationFrameId)
+}
+/*
+ * 执行requestAnimationFrame对象{start, stop, remove, fn}
+ * @param {Function} fn
+ * @param {Number} interval 执行间隔
+ */
+function Animation (fn, interval = 0) {
+  this.interval = Math.max(0, +interval) || 0;
+  let frameId = 0;
+  let status = 0;
+  const frameItem = {
+    fn: typeof fn === 'function' ? fn : null,
+    time: 0
+  }
+  const _frame1 = () => {
+    frameId = requestAnimationFrame(() => {
+      frameItem.fn(Date.now());
+      if (status) _frame1();
+    })
+  }
+  const _frame2 = () => {
+    frameId = requestAnimationFrame(() => {
+      const now = Date.now();
+      if (now - frameItem.time >= this.interval) {
+        frameItem.time = now;
+        frameItem.fn(now);
+      }
+      if (status) _frame2();
+    })
+  }
+  this.start = function () {
+    if (typeof frameItem.fn !== 'function') {
+      console.warn('no function');
+      return;
+    }
+    if (status) return;
+    status = 1;
+    if (this.interval) {
+      frameItem.time = 0;
+      _frame2();
+    } else {
+      _frame1();
+    }
+  }
+  this.stop = function () {
+    status = 0;
+    cancelAnimationFrame(frameId);
+  }
+  this.remove = function () {
+    this.stop();
+    frameItem.fn = null;
+  }
+  this.fn = function (fn) {
+    if (typeof fn === 'function') {
+      frameItem.fn = fn;
+    }
+  }
+}
+export default Animation;

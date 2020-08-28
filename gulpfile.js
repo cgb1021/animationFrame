@@ -6,6 +6,7 @@ const babel = require('gulp-babel');
 
 gulp.task('clean', function (cb) {
   return del([
+    './dist',
     './index.js'
   ], cb)
 });
@@ -15,18 +16,22 @@ gulp.task('rollup', () => {
     plugins: []
   }).then(bundle => {
     return bundle.write({
-      file: './index.js',
+      file: './dist/index.js',
       format: 'umd',
       name: 'Animation'
     });
   })
 });
-gulp.task('babel', function (cb) {
-  return gulp.src('./index.js')
+gulp.task('copy', () => {
+  return gulp.src('./src/**/*')
+  .pipe(gulp.dest('./'))
+});
+gulp.task('babel', () => {
+  return gulp.src('./dist/**/*')
   .pipe(babel({
     presets: ['@babel/preset-env']
   }))
   .pipe(uglify())
-  .pipe(gulp.dest('./'))
+  .pipe(gulp.dest('./dist'))
 });
-gulp.task('build', gulp.series('clean', 'rollup', 'babel'))
+gulp.task('build', gulp.series('clean', 'rollup', 'babel', 'copy'))
