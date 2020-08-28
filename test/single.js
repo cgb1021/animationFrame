@@ -1,5 +1,6 @@
-import { assert } from 'chai'
-import Animation from '../index'
+const { assert } = require('chai') 
+const Animation = require('../lib/index').default
+
 describe('Single', function () {
 	describe('#new/start/stop', function () {
 		it('创建对象', function (done) {

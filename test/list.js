@@ -1,5 +1,5 @@
-import { assert } from 'chai'
-import { animationStart, animationStop, animationAdd, animationRemove } from '../index'
+const { assert } = require('chai') 
+const { animationStart, animationStop, animationAdd, animationRemove } = require('../lib/index')
 
 before(function () {
 	animationStart()
