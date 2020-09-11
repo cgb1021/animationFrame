@@ -109,8 +109,9 @@ export function animationStop () {
  * 执行requestAnimationFrame对象{start, stop, remove, fn}
  * @param {Function} fn
  * @param {Number} interval 执行间隔
+ * @param {Boolean} autoStart 自动执行
  */
-function Animation (fn, interval = 0) {
+function Animation (fn, interval = 0, autoStart = true) {
 	this.interval = Math.max(0, +interval) || 0
 	let frameId = 0
 	let status = 0
@@ -135,7 +136,7 @@ function Animation (fn, interval = 0) {
 		})
 	}
 	this.start = function () {
-		if (typeof frameItem.fn !== 'function') {
+		if (!frameItem.fn) {
 			// console.warn('no function')
 			return
 		}
@@ -161,5 +162,6 @@ function Animation (fn, interval = 0) {
 			frameItem.fn = fn
 		}
 	}
+	if (autoStart) this.start()
 }
 export default Animation

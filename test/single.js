@@ -15,7 +15,11 @@ describe('Single', function () {
 				assert.equal(count, 1, '第一次运行')
 			})
 			assert.isObject(animation)
-			animation.start()
+			// animation.start()
+		})
+		it('不自动执行', function (done) {
+      setTimeout(done, 100)
+			new Animation(done, 2000, false)
 		})
 		it('remove', function (done) {
 			const animation = new Animation(() => {

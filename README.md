@@ -15,7 +15,10 @@ import animation, { animationAdd, animationStop, animationAdd, animationRemove }
 const frame = new animation(() => {
     console.log('animation callback')
 }, 0)
-frame.start()
+// frame.start()
+// frame.stop()
+// frame.remove()
+// frame.fn(() => {})
 
 let count = 0
 animationStart()
